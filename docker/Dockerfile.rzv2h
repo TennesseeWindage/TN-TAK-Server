@@ -1,0 +1,34 @@
+# Dockerfile.rzv2h — Renesas RZ/V2H specific overrides
+#
+# RZ/V2H: 4x Cortex-A55 @ 1.8 GHz, DRP-AI3 8 TOPS
+# TAK Server 5.5 — requires Java 17 and PostgreSQL 15.
+# This variant enforces linux/arm64 and applies RZ-specific JVM tuning.
+
+FROM --platform=linux/arm64 eclipse-temurin:17-jre AS rzv2h
+
+LABEL target.platform="Renesas RZ/V2H" \
+      target.arch="linux/arm64" \
+      tak.version="5.5-RELEASE-58"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    net-tools \
+    openssl \
+    postgresql-client \
+    openjdk-17-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/tak
+
+COPY tak/ .
+
+# JVM tuning for 4x A55 cores, conservative heap for shared RZ board
+# Leave headroom for LightIFF AI inference pipeline on host
+ENV JAVA_OPTS="-Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+EXPOSE 8089 8443 8444 8446 9000 9001
+
+VOLUME ["/opt/tak/certs", "/opt/tak/logs", "/opt/tak/CoreConfig.xml"]
+
+CMD ["sh", "-c", "java ${JAVA_OPTS} -jar takserver.war"]

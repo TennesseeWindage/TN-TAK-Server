@@ -1,0 +1,43 @@
+{
+  "_comment": "TAK Federation Hub policy file — controls which groups and servers can federate.",
+  "_reference": "https://github.com/TAK-Product-Center/Server",
+
+  "federationHubPolicy": {
+    "version": "1",
+
+    "outgoingGroups": [
+      {
+        "_comment": "Groups on THIS server shared outbound to federated servers.",
+        "name": "__ANON__",
+        "enabled": false
+      },
+      {
+        "name": "LIGHTIFF",
+        "enabled": true,
+        "_comment": "LightIFF operators group — IFF-KEY, IFF-FRIEND, IFF-HIT relayed to federates"
+      }
+    ],
+
+    "incomingGroups": [
+      {
+        "_comment": "Groups from remote federated servers mapped to local groups.",
+        "remoteGroup": "LIGHTIFF",
+        "localGroup": "LIGHTIFF",
+        "enabled": true
+      }
+    ],
+
+    "federationOutgoing": [
+      {
+        "_comment": "Add remote server entries here. VPN IP recommended (Tailscale/Netbird).",
+        "_example_tailscale": {
+          "name": "remote-tak-1",
+          "host": "100.x.y.z",
+          "port": 9001,
+          "enabled": false,
+          "tlsVersion": "TLSv1.3"
+        }
+      }
+    ]
+  }
+}

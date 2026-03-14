@@ -1,0 +1,44 @@
+version: "3.9"
+
+# ARM64 (Renesas RZ/V2H, RZ/V2N) compose overrides.
+# Overlay on top of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+#
+# Enforces linux/arm64 platform, applies JVM memory limits appropriate for
+# RZ/V2H (2–4 GB system RAM) and RZ/V2N (2 GB system RAM).
+
+services:
+
+  tak-server:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.rzv2h   # Switch to Dockerfile.rzv2n for RZ/V2N
+      platforms:
+        - linux/arm64
+    environment:
+      # JVM heap: 1.5 GB for V2H (leave headroom for AI inference on host)
+      # Reduce to -Xmx768m for RZ/V2N
+      - JAVA_OPTS=-Xms256m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=200
+    deploy:
+      resources:
+        limits:
+          # Limit TAK Server container; remainder available to LightIFF AI pipeline
+          memory: 2g
+          cpus: "2.0"
+
+  tak-db:
+    platform: linux/arm64
+    image: postgres:15-alpine
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+    # Reduce shared_buffers for low-RAM boards
+    command: >
+      postgres
+        -c shared_buffers=64MB
+        -c effective_cache_size=256MB
+        -c max_connections=50

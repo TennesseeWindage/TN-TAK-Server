@@ -1,0 +1,17 @@
+# TAK Server Docker release SHA1 checksums
+# Format: <sha1sum>  <filename>
+# Source: https://github.com/Cloud-RF/tak-server and https://tak.gov
+# Update this file when pinning to a new TAK Server release.
+#
+# CURRENT RECOMMENDED RELEASE: takserver-docker-5.5-RELEASE-58.zip
+#   - Requires PostgreSQL 15 (NOT 16 — Ubuntu 24.04 defaults to 16; use explicit install)
+#   - Requires Java/Temurin 17 (install OpenJDK 17 headers too; .deb depends on them)
+#   - Download from: https://tak.gov/products/tak-server (registration required)
+
+98f13f9140470ee65351e3d25dec097603bfb582  takserver-docker-5.2-RELEASE-30.zip
+824d7b89fbe6377cb5570f50bb35e6e05c12b230  takserver-docker-5.2-RELEASE-43.zip
+1eaad8c4471392a96c60f56bc2d54f9f3b6d719e  takserver-docker-5.3-RELEASE-24.zip
+37c3a8f3c7626326504ab8047c42a0473961be24  takserver-docker-5.3-RELEASE-30.zip
+2f3ced9b3e81c448e401b995f64566e7b888b991  takserver-docker-5.4-RELEASE-19.zip
+7f7da1a58544b34e01576b99f8db59e1987cd96c  takserver-docker-5.4-RELEASE-106.zip
+7f0c07aa0ad7ff575c0278d734264e3e446ec93c  takserver-docker-5.5-RELEASE-58.zip

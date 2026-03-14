@@ -1,0 +1,36 @@
+version: "3.9"
+
+# Meshtastic-TAK bridge sidecar compose file.
+# Overlay on top of docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml \
+#                  -f config/meshtastic/docker-compose.meshtastic.yml \
+#                  up -d
+
+services:
+
+  meshtastic-bridge:
+    # Replace with a verified meshtastic-tak bridge image when available.
+    # Options:
+    #   - https://github.com/alphafox02/meshtastic_to_tak (check for Docker image)
+    #   - Custom image built from config/meshtastic/bridge/
+    image: alphafox02/meshtastic_to_tak:latest
+    container_name: meshtastic-bridge
+    restart: unless-stopped
+    networks:
+      - taknet
+    # Serial device passthrough for wired LoRa radio
+    devices:
+      - "${MESH_DEVICE:-/dev/ttyUSB0}:/dev/ttyUSB0"
+    environment:
+      - MESH_DEVICE=/dev/ttyUSB0
+      - TAK_HOST=tak-server
+      - TAK_PORT=8087
+      - CALLSIGN_PREFIX=${CALLSIGN_PREFIX:-MESH-}
+    depends_on:
+      - tak-server
+
+networks:
+  taknet:
+    external: true
+    name: tn-tak-server_taknet

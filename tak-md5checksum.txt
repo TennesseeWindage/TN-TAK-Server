@@ -1,0 +1,18 @@
+# TAK Server Docker release checksums
+# Format: <md5sum>  <filename>
+# Source: https://github.com/Cloud-RF/tak-server and https://tak.gov
+# Update this file when pinning to a new TAK Server release.
+#
+# CURRENT RECOMMENDED RELEASE: takserver-docker-5.5-RELEASE-58.zip
+#   - Requires PostgreSQL 15 (NOT 16)
+#   - Requires Java/Temurin 17
+#   - Download from: https://tak.gov/products/tak-server (registration required)
+#   - Also available as .deb: takserver_5.5-RELEASE58_all.deb
+
+b691d1d7377790690e1e5ec0e4a29a56  takserver-docker-5.2-RELEASE-30.zip
+0a7398383253707dd7564afc88f29b3b  takserver-docker-5.2-RELEASE-43.zip
+e8a5dc855c4eb67d170bf689017516e8  takserver-docker-5.3-RELEASE-24.zip
+b24b5ae01aeac151565aa35a39899785  takserver-docker-5.3-RELEASE-30.zip
+9e6f3e3b61f8677b491d6ed15baf1813  takserver-docker-5.4-RELEASE-19.zip
+edce00ff13f8fdfb340e7e05eafc5454  takserver-docker-5.4-RELEASE-106.zip
+6d362f234305b9a5e8f9245ef8f3e45d  takserver-docker-5.5-RELEASE-58.zip

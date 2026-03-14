@@ -1,0 +1,33 @@
+# Dockerfile.rzv2n — Renesas RZ/V2N specific overrides
+#
+# RZ/V2N: Lower-spec variant; less RAM than V2H.
+# TAK Server 5.5 — requires Java 17 and PostgreSQL 15.
+# Minimal heap; TAK Server only, no AI inference in this container.
+
+FROM --platform=linux/arm64 eclipse-temurin:17-jre AS rzv2n
+
+LABEL target.platform="Renesas RZ/V2N" \
+      target.arch="linux/arm64" \
+      tak.version="5.5-RELEASE-58"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    net-tools \
+    openssl \
+    postgresql-client \
+    openjdk-17-jdk-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/tak
+
+COPY tak/ .
+
+# Conservative heap for lower-RAM RZ/V2N board (2 GB total system RAM)
+ENV JAVA_OPTS="-Xms256m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=300"
+
+EXPOSE 8089 8443 8444 8446 9000 9001
+
+VOLUME ["/opt/tak/certs", "/opt/tak/logs", "/opt/tak/CoreConfig.xml"]
+
+CMD ["sh", "-c", "java ${JAVA_OPTS} -jar takserver.war"]

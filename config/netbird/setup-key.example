@@ -1,0 +1,8 @@
+# Netbird setup key
+# Generate in the Netbird management dashboard (Settings → Setup Keys)
+# or via the Netbird API.
+# DO NOT commit to version control.
+# chmod 600 config/netbird/setup-key
+#
+# Example:
+# A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6

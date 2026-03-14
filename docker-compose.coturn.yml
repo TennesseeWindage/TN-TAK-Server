@@ -1,0 +1,41 @@
+version: "3.9"
+
+# coturn ICE/STUN/TURN sidecar for TN-TAK-Server
+#
+# coturn provides STUN and TURN relay services for NAT traversal.
+# Used when TAK Server federation peers cannot establish direct WireGuard (Tailscale/Netbird)
+# tunnels and need a relay to traverse NAT/firewalls.
+#
+# Usage (overlay on base compose):
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.coturn.yml \
+#     up -d
+#
+# Ports:
+#   3478  UDP/TCP — STUN/TURN
+#   5349  UDP/TCP — STUN/TURN over TLS
+#   49152-65535 UDP — TURN relay ports (configurable; reduce range for constrained hosts)
+#
+# Public STUN alternatives (no self-hosting needed for STUN only):
+#   stun:stun.l.google.com:19302  (Google STUN, free)
+#   stun:stun.tennesseewindage.com:3478  (Tennessee Windage hosted, when available)
+#
+# For TURN relay (required when STUN alone fails), a self-hosted or
+# Tennessee Windage-provided coturn server is needed.
+# See docs/ICE_STUN_TURN.md.
+
+services:
+
+  coturn:
+    image: coturn/coturn:latest
+    container_name: tn-coturn
+    restart: unless-stopped
+    network_mode: host
+    # host network is required for coturn to correctly determine its public IP
+    # and for UDP relay ports to function across NAT.
+    volumes:
+      - ./config/coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+      - ./config/coturn/certs:/etc/coturn/certs:ro
+    # Override default command to use our config
+    command: -c /etc/coturn/turnserver.conf

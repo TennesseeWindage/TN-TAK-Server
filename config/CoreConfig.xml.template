@@ -1,0 +1,87 @@
+# CoreConfig.xml.template — TAK Server 5.5 core configuration
+#
+# Copy to config/CoreConfig.xml and edit.
+# setup.sh performs substitutions from environment variables.
+#
+# TAK Server 5.5 notes:
+#   - PostgreSQL 15 REQUIRED (16 will fail)
+#   - Java 17 REQUIRED
+#   - Federation v1 is deprecated; v2 (port 9000/9001) preferred
+#   - Federation Hub is a SEPARATE package: takserver-fed-hub_5.5-RELEASE58_all.deb
+#
+# Key settings:
+#   - Network interface binding
+#   - TLS/SSL settings
+#   - Federation (v2 enabled; set enableFederation=true when ready)
+#   - Plugin path
+#
+# Full schema: https://github.com/TAK-Product-Center/Server/blob/main/src/takserver-core/takserver-war/src/main/resources/CoreConfig.xsd
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+  <network multicastTTL="5" serverId="TNTAK-{{SERVER_ID}}" version="3">
+
+    <!-- ── Connector definitions ───────────────────────────────────────── -->
+
+    <!-- TLS CoT + web UI (ATAK clients and browser) -->
+    <connector port="8443" tls="true" _name="https_legacy_input"/>
+
+    <!-- Certificate enrollment (ATAK auto-cert) -->
+    <connector port="8444" tls="true" _name="cert_https"/>
+
+    <!-- Legacy unencrypted CoT TCP — disable in production -->
+    <!-- <connector port="8089" tls="false" _name="tcp"/> -->
+
+    <!-- Federation connector (v2) -->
+    <connector port="8446" tls="true" _name="fed_https"/>
+
+  </network>
+
+  <auth x509groups="true" x509addAnonymous="false"/>
+
+  <!-- ── TLS / Certificates ────────────────────────────────────────────── -->
+  <security>
+    <tls context="TLSv1.2,TLSv1.3"
+         keystore="JKS"
+         keystoreFile="/opt/tak/certs/files/takserver.jks"
+         keystorePass="{{KEYSTORE_PASS}}"
+         truststore="JKS"
+         truststoreFile="/opt/tak/certs/files/truststore-intermediate.jks"
+         truststorePass="{{TRUSTSTORE_PASS}}"
+         />
+  </security>
+
+  <!-- ── Repository (PostgreSQL 15) ───────────────────────────────────── -->
+  <!-- IMPORTANT: TAK Server 5.5 requires PostgreSQL 15. Do not use PG 16. -->
+  <repository enable="true">
+    <connection
+      url="jdbc:postgresql://{{TAK_DB_HOST}}:{{TAK_DB_PORT}}/{{TAK_DB_NAME}}"
+      username="{{TAK_DB_USER}}"
+      password="{{TAK_DB_PASS}}"
+      sslEnabled="false"/>
+  </repository>
+
+  <!-- ── Federation ───────────────────────────────────────────────────── -->
+  <!--
+    enableFederation=true to activate; set to false when running standalone.
+    v2 federation uses port 9000/9001 (Federation Hub package required).
+    For direct peer-to-peer federation without Federation Hub, use port 8446.
+    See docs/FEDERATION.md for full setup guide.
+
+    Federation over VPN (Tailscale/Netbird):
+      Remote federated servers connect over VPN IP — no public port exposure needed.
+      Add <federate> entries under <federation> for each remote server.
+  -->
+  <federation v1Enabled="false" v2Enabled="true" enableFederation="false">
+    <!--
+    Example remote federated server:
+    <federate address="100.x.y.z" port="9000" fallback="false" id="remote-tak-1"
+              name="Remote TAK Server 1" v1="false" v2="true"/>
+    -->
+  </federation>
+
+  <!-- ── Plugins ──────────────────────────────────────────────────────── -->
+  <!-- <plugins><plugin jar="/opt/tak/plugins/lightiff-plugin.jar"/></plugins> -->
+
+</Configuration>

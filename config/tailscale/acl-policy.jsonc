@@ -1,0 +1,36 @@
+# Tailscale ACL policy example for TN-TAK-Server
+# Paste this into https://login.tailscale.com/admin/acls
+# Adjust groups and tags to match your tailnet organization.
+
+{
+  "tagOwners": {
+    "tag:tak-server": ["autogroup:admin"],
+    "tag:tak-client": ["autogroup:admin"]
+  },
+
+  "acls": [
+    // TAK clients can reach TAK Server on TAK ports
+    {
+      "action": "accept",
+      "src": ["tag:tak-client"],
+      "dst": ["tag:tak-server:8443", "tag:tak-server:8444", "tag:tak-server:8446"]
+    },
+
+    // Admin can reach everything
+    {
+      "action": "accept",
+      "src": ["autogroup:admin"],
+      "dst": ["*:*"]
+    }
+  ],
+
+  "ssh": [
+    // Admin SSH into TAK server for maintenance
+    {
+      "action": "accept",
+      "src": ["autogroup:admin"],
+      "dst": ["tag:tak-server"],
+      "users": ["autogroup:nonroot"]
+    }
+  ]
+}

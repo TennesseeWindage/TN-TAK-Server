@@ -1,0 +1,7 @@
+# Tailscale auth key (one-time use or reusable)
+# Generate at: https://login.tailscale.com/admin/settings/keys
+# Paste the key here and chmod 600 this file.
+# DO NOT commit this file to version control.
+#
+# Example:
+# tskey-auth-kXXXXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

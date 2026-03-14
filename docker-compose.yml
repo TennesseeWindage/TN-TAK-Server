@@ -1,0 +1,76 @@
+version: "3.9"
+
+# TN-TAK-Server — base compose file for linux/amd64.
+# For ARM64 (Renesas RZ/V2H, RZ/V2N): overlay docker-compose.arm64.yml
+#
+#   docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+#
+# Networks
+#   taknet — internal bridge for tak-server ↔ tak-db
+#   host ports exposed per CoreConfig.xml
+
+services:
+
+  # ── TAK Server ──────────────────────────────────────────────────────────────
+  tak-server:
+    image: tn-tak-server:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: tn-tak-server
+    restart: unless-stopped
+    depends_on:
+      tak-db:
+        condition: service_healthy
+    networks:
+      - taknet
+    ports:
+      - "8089:8089"    # CoT TCP (unencrypted legacy; disable in CoreConfig if not needed)
+      - "8443:8443"    # HTTPS web UI + TLS CoT
+      - "8444:8444"    # Certificate enrollment
+      - "8446:8446"    # TAK Federation
+    volumes:
+      - ./tak:/opt/tak            # Extracted TAK Server release (populated by setup.sh)
+      - ./config/CoreConfig.xml:/opt/tak/CoreConfig.xml:ro
+      - tak-certs:/opt/tak/certs
+      - tak-logs:/opt/tak/logs
+    environment:
+      - TAK_DB_HOST=tak-db
+      - TAK_DB_PORT=5432
+      - TAK_DB_NAME=${TAK_DB_NAME:-cot}
+      - TAK_DB_USER=${TAK_DB_USER:-martiuser}
+      - TAK_DB_PASS=${TAK_DB_PASS:-martipass}
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:8443/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  tak-db:
+    image: postgres:15-alpine
+    container_name: tn-tak-db
+    restart: unless-stopped
+    networks:
+      - taknet
+    environment:
+      - POSTGRES_DB=${TAK_DB_NAME:-cot}
+      - POSTGRES_USER=${TAK_DB_USER:-martiuser}
+      - POSTGRES_PASSWORD=${TAK_DB_PASS:-martipass}
+    volumes:
+      - tak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TAK_DB_USER:-martiuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  tak-certs:
+  tak-logs:
+  tak-db-data:
+
+networks:
+  taknet:
+    driver: bridge

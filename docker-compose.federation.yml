@@ -1,0 +1,75 @@
+version: "3.9"
+
+# TAK Federation Hub sidecar compose file
+#
+# TAK Federation Hub is a SEPARATE package from TAK Server 5.5.
+# Download: takserver-fed-hub_5.5-RELEASE58_all.deb from https://tak.gov
+# The Federation Hub enables v2 (broker-based) federation between TAK servers.
+#
+# Usage (overlay on base compose):
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f docker-compose.federation.yml \
+#     up -d
+#
+# Ports:
+#   9000 — Federation Hub v1 broker (disabled by default)
+#   9001 — Federation Hub v2 broker
+#   9100 — Federation Hub web UI (HTTPS)
+#
+# For federation over Tailscale or Netbird:
+#   Remote servers connect to this server's VPN IP on port 9000/9001.
+#   No public internet exposure required.
+#   See docs/FEDERATION.md for topology and certificate exchange.
+
+services:
+
+  # ── TAK Federation Hub ────────────────────────────────────────────────────
+  # The fed-hub runs as a sidecar alongside tak-server.
+  # It is pre-installed in the TAK Docker release ZIP.
+  # If using the Docker release, the fed-hub script is at:
+  #   tak/federation-hub/scripts/federation-hub.sh
+  tak-fed-hub:
+    image: tn-tak-server:latest
+    container_name: tn-tak-fed-hub
+    restart: unless-stopped
+    depends_on:
+      tak-server:
+        condition: service_healthy
+    networks:
+      - taknet
+    ports:
+      - "9000:9000"    # Federation Hub v1 broker (disable if not using v1)
+      - "9001:9001"    # Federation Hub v2 broker
+      - "9100:9100"    # Federation Hub web UI
+    volumes:
+      - ./tak:/opt/tak
+      - tak-certs:/opt/tak/certs
+      - tak-logs:/opt/tak/logs
+      - ./config/federation/federation-hub-policy.json:/opt/tak/federation-hub/policy/federation-hub-policy.json:ro
+    environment:
+      - FEDERATION_HUB_POLICY=/opt/tak/federation-hub/policy/federation-hub-policy.json
+    # Federation Hub startup — runs the bundled start script
+    command: >
+      sh -c "
+        if [ -f /opt/tak/federation-hub/scripts/federation-hub.sh ]; then
+          /opt/tak/federation-hub/scripts/federation-hub.sh;
+        else
+          echo 'ERROR: Federation Hub script not found.';
+          echo 'Download takserver-fed-hub_5.5-RELEASE58_all.deb from tak.gov';
+          exit 1;
+        fi
+      "
+
+networks:
+  taknet:
+    external: true
+    name: tn-tak-server_taknet
+
+volumes:
+  tak-certs:
+    external: true
+    name: tn-tak-server_tak-certs
+  tak-logs:
+    external: true
+    name: tn-tak-server_tak-logs

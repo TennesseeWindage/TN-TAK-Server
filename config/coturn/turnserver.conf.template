@@ -1,0 +1,64 @@
+# coturn STUN/TURN server configuration for TN-TAK-Server
+# Reference: https://github.com/coturn/coturn/blob/master/examples/etc/turnserver.conf
+#
+# Copy to config/coturn/turnserver.conf (done by setup-coturn.sh).
+# Edit PUBLIC_IP and REALM below before starting.
+
+# ── Listening ────────────────────────────────────────────────────────────
+listening-port=3478
+tls-listening-port=5349
+
+# The public IP of this server.
+# For cloud VM: set to the public/Elastic IP.
+# For Tailscale: set to the Tailscale IP (100.x.y.z) for VPN-internal TURN.
+# For Netbird: set to the Netbird peer IP.
+external-ip={{PUBLIC_IP}}
+
+# Listening on all interfaces
+listening-ip=0.0.0.0
+
+# ── Realm ────────────────────────────────────────────────────────────────
+# Realm identifies this TURN server. Use your domain or server hostname.
+# Tennessee Windage hosted: realm=turn.tennesseewindage.com
+realm={{REALM}}
+
+# ── Relay port range ─────────────────────────────────────────────────────
+# Reduce this range on constrained hosts (RZ/V2H with limited ports).
+min-port=49152
+max-port=65535
+
+# ── Authentication ────────────────────────────────────────────────────────
+# Long-term credential mechanism (required for TURN relay).
+# Generate credentials with: turnadmin -a -u <user> -r <realm> -p <pass>
+# Or use the setup-coturn.sh script.
+lt-cred-mech
+
+# User credentials file
+userdb=/var/lib/coturn/turndb
+
+# ── TLS certificates ─────────────────────────────────────────────────────
+# For TLS TURN (port 5349). Can reuse TAK Server's cert or generate separately.
+# Set to empty to disable TLS and use plain TURN only (not recommended for prod).
+cert=/etc/coturn/certs/turn_server_cert.pem
+pkey=/etc/coturn/certs/turn_server_pkey.pem
+
+# ── Logging ──────────────────────────────────────────────────────────────
+log-file=/var/log/coturn/turn.log
+new-log-timestamp
+log-binding
+
+# ── Security ──────────────────────────────────────────────────────────────
+# Deny relay to loopback and RFC1918 private addresses
+# (prevents SSRF attacks via TURN relay)
+no-loopback-peers
+no-multicast-peers
+denied-peer-ip=10.0.0.0-10.255.255.255
+denied-peer-ip=192.168.0.0-192.168.255.255
+denied-peer-ip=172.16.0.0-172.31.255.255
+
+# ── Fingerprint ──────────────────────────────────────────────────────────
+fingerprint
+
+# ── Mobility ──────────────────────────────────────────────────────────────
+# Useful for mobile ATAK clients on cellular that change IP
+mobility
