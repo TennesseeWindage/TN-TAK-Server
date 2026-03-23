@@ -117,8 +117,8 @@ This TAK Server is the **coalition and cross-unit relay** for the LightIFF proto
 - Relays `IFF-KEY`, `IFF-FRIEND`, `IFF-HIT`, `IFF-CFG` CoT between ATAK clients
 - No server-side plugin required — TAK Server is CoT transport only
 - See [docs/LIGHTIFF_INTEGRATION.md](docs/LIGHTIFF_INTEGRATION.md)
-- LightIFF protocol spec: [github.com/TennesseeWindage/LightIFF](https://github.com/TennesseeWindage/LightIFF)
-- ATAK plugin: [github.com/TennesseeWindage/LightIFF-ATAK-Plugin](https://github.com/TennesseeWindage/LightIFF-ATAK-Plugin)
+- LightIFF protocol spec: [https://repos.fyberlabs.com/tennessee-windage?LightIFF](https://repos.fyberlabs.com/tennessee-windage?LightIFF)
+- ATAK plugin: [https://repos.fyberlabs.com/tennessee-windage?LightIFF-ATAK-Plugin](https://repos.fyberlabs.com/tennessee-windage?LightIFF-ATAK-Plugin)
 
 ---
 
